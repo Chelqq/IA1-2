@@ -4,7 +4,7 @@ from matplotlib.colors import ListedColormap
 from matplotlib.widgets import TextBox, Button
 
 from perceptron import Perceptron
-from adaline import Adaline
+#from adaline import Adaline
 from constants import *
 
 
@@ -48,19 +48,19 @@ class Plotter:
         ax_text_box_desired_error = plt.axes(TEXT_BOX_DESIRED_ERROR_AXES)
         ax_button_weights = plt.axes(BUTTON_WEIGHTS_AXES)
         ax_button_perceptron = plt.axes(BUTTON_PERCEPTRON_AXES)
-        ax_button_adaline = plt.axes(BUTTON_ADALINE_AXES)
+        #ax_button_adaline = plt.axes(BUTTON_ADALINE_AXES)
         self.text_box_learning_rate = TextBox(ax_text_box_learning_rate, TEXT_BOX_LEARNING_RATE_PROMPT)
         self.text_box_max_epochs = TextBox(ax_text_box_max_epochs, TEXT_BOX_MAX_EPOCHS_PROMPT)
         self.text_box_desired_error = TextBox(ax_text_box_desired_error, TEXT_BOX_DESIRED_ERROR_PROMPT)
         button_weights = Button(ax_button_weights, BUTTON_WEIGHTS_TEXT)
         button_perceptron = Button(ax_button_perceptron, BUTTON_PERCEPTRON_TEXT)
-        button_adaline = Button(ax_button_adaline, BUTTON_ADALINE_TEXT)
+        #button_adaline = Button(ax_button_adaline, BUTTON_ADALINE_TEXT)
         self.text_box_max_epochs.on_submit(self.__submit_max_epochs)
         self.text_box_learning_rate.on_submit(self.__submit_learning_rate)
         self.text_box_desired_error.on_submit(self.__submit_desired_error)
         button_weights.on_clicked(self.__initialize_weights)
         button_perceptron.on_clicked(self.__fit_perceptron)
-        button_adaline.on_clicked(self.__fit_adaline)
+        #button_adaline.on_clicked(self.__fit_adaline)
         self.fig.canvas.mpl_connect('button_press_event', self.__onclick)
         plt.show()
 
@@ -70,7 +70,7 @@ class Plotter:
         points_plotted = len(self.X) > 0
         if learning_rate_initialized and max_epochs_initialized and points_plotted:
             if self.perceptron_fitted:
-                self.adaline = Adaline(self.learning_rate, self.max_epochs, NORMALIZATION_RANGE)
+                #self.adaline = Adaline(self.learning_rate, self.max_epochs, NORMALIZATION_RANGE)
                 self.adaline.init_weights()
                 self.adaline_weights_initialized = True
                 self.plot_decision_boundary(self.adaline)
@@ -107,27 +107,6 @@ class Plotter:
             self.current_epoch = 0
             self.ax_main.set_title(MAIN_SUBPLOT_ADALINE_TITLE)
             self.algorithm_convergence_text.set_text(None)
-
-    def __fit_adaline(self, event):
-        if not self.adaline_fitted and self.adaline_weights_initialized and self.desired_error != 0.0:
-            cumulative_error = 1
-            while cumulative_error > self.desired_error and self.current_epoch < self.max_epochs:
-                self.current_epoch += 1
-                cumulative_error = 0
-                for i, x in enumerate(self.X):
-                    x = np.insert(x, 0, -1.0)
-                    learning_rate = self.learning_rate * 2
-                    f_y = self.adaline.fw(x)
-                    der_f_y = f_y * (1.0 - f_y)
-                    error = self.Y[i] - f_y
-                    cumulative_error += error ** 2
-                    self.adaline.weights = \
-                        self.adaline.weights + np.multiply((learning_rate * error * der_f_y), x)
-                    self.plot_decision_boundary(self.adaline)
-                self.__plot_adaline_errors(cumulative_error)
-            self.plot_decision_regions(self.adaline)
-            plt.pause(MAIN_SUBPLOT_PAUSE_INTERVAL)
-            self.adaline_fitted = True
 
     def plot_decision_regions(self, perceptron, resolution=0.02):
         markers = ('x', '.', '^', 'v')
@@ -187,16 +166,6 @@ class Plotter:
         self.perceptron_errors[1].append(count)
         self.ax_perceptron_errors.plot(self.perceptron_errors[0], self.perceptron_errors[1],
                                        PERCEPTRON_DECISION_BOUNDARY_MARKER)
-        plt.pause(ERRORS_SUBPLOT_PAUSE_INTERVAL)
-
-    def __plot_adaline_errors(self, cumulative_error):
-        if not self.adaline_errors:
-            self.adaline_errors = [[], []]
-        else:
-            self.ax_adaline_errors.clear()
-        self.adaline_errors[0].append(self.current_epoch)
-        self.adaline_errors[1].append(cumulative_error)
-        self.ax_adaline_errors.plot(self.adaline_errors[0], self.adaline_errors[1], ADALINE_DECISION_BOUNDARY_MARKER)
         plt.pause(ERRORS_SUBPLOT_PAUSE_INTERVAL)
 
     def __onclick(self, event):
