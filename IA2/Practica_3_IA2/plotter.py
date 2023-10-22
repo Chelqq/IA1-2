@@ -4,7 +4,6 @@ from matplotlib.colors import ListedColormap
 from matplotlib.widgets import TextBox, Button
 
 from perceptron import Perceptron
-#from adaline import Adaline
 from constants import *
 
 
@@ -18,11 +17,8 @@ class Plotter:
     current_epoch_text = None
     algorithm_convergence_text = None
     perceptron_weights_initialized = False
-    adaline_weights_initialized = False
     perceptron_fitted = False
-    adaline_fitted = False
     perceptron_decision_boundary = None
-    adaline_decision_boundary = None
     perceptron_errors = None
     adaline_errors = None
     done = False
@@ -39,28 +35,22 @@ class Plotter:
         self.ax_perceptron_errors.set_title(PERCEPTRON_ERRORS_SUBPLOT_TITLE)
         self.ax_perceptron_errors.set_xlabel(ERRORS_SUBPLOT_XLABEL)
         self.ax_perceptron_errors.set_ylabel(PERCEPTRON_ERRORS_SUBPLOT_YLABEL)
-        self.ax_adaline_errors.set_title(ADALINE_ERRORS_SUBPLOT_TITLE)
-        self.ax_adaline_errors.set_xlabel(ERRORS_SUBPLOT_XLABEL)
-        self.ax_adaline_errors.set_ylabel(ADALINE_ERRORS_SUBPLOT_YLABEL)
 
         ax_text_box_learning_rate = plt.axes(TEXT_BOX_LEARNING_RATE_AXES)
         ax_text_box_max_epochs = plt.axes(TEXT_BOX_MAX_EPOCHS_AXES)
         ax_text_box_desired_error = plt.axes(TEXT_BOX_DESIRED_ERROR_AXES)
         ax_button_weights = plt.axes(BUTTON_WEIGHTS_AXES)
         ax_button_perceptron = plt.axes(BUTTON_PERCEPTRON_AXES)
-        #ax_button_adaline = plt.axes(BUTTON_ADALINE_AXES)
         self.text_box_learning_rate = TextBox(ax_text_box_learning_rate, TEXT_BOX_LEARNING_RATE_PROMPT)
         self.text_box_max_epochs = TextBox(ax_text_box_max_epochs, TEXT_BOX_MAX_EPOCHS_PROMPT)
         self.text_box_desired_error = TextBox(ax_text_box_desired_error, TEXT_BOX_DESIRED_ERROR_PROMPT)
         button_weights = Button(ax_button_weights, BUTTON_WEIGHTS_TEXT)
         button_perceptron = Button(ax_button_perceptron, BUTTON_PERCEPTRON_TEXT)
-        #button_adaline = Button(ax_button_adaline, BUTTON_ADALINE_TEXT)
         self.text_box_max_epochs.on_submit(self.__submit_max_epochs)
         self.text_box_learning_rate.on_submit(self.__submit_learning_rate)
         self.text_box_desired_error.on_submit(self.__submit_desired_error)
         button_weights.on_clicked(self.__initialize_weights)
         button_perceptron.on_clicked(self.__fit_perceptron)
-        #button_adaline.on_clicked(self.__fit_adaline)
         self.fig.canvas.mpl_connect('button_press_event', self.__onclick)
         plt.show()
 
@@ -69,12 +59,6 @@ class Plotter:
         max_epochs_initialized = self.max_epochs != 0
         points_plotted = len(self.X) > 0
         if learning_rate_initialized and max_epochs_initialized and points_plotted:
-            if self.perceptron_fitted:
-                #self.adaline = Adaline(self.learning_rate, self.max_epochs, NORMALIZATION_RANGE)
-                self.adaline.init_weights()
-                self.adaline_weights_initialized = True
-                self.plot_decision_boundary(self.adaline)
-            else:
                 self.perceptron = Perceptron(self.learning_rate, self.max_epochs, NORMALIZATION_RANGE)
                 self.perceptron.init_weights()
                 self.perceptron_weights_initialized = True
@@ -147,15 +131,6 @@ class Plotter:
                 self.current_epoch_text = self.ax_main.text(CURRENT_EPOCH_TEXT_X_POS, CURRENT_EPOCH_TEXT_Y_POS,
                                                             CURRENT_EPOCH_TEXT % self.current_epoch,
                                                             fontsize=CURRENT_EPOCH_TEXT_FONT_SIZE)
-        else:
-            if self.adaline_decision_boundary:
-                self.adaline_decision_boundary.set_xdata(x1)
-                self.adaline_decision_boundary.set_ydata(x2)
-            else:
-                self.adaline_decision_boundary, = self.ax_main.plot(x1, x2, ADALINE_DECISION_BOUNDARY_MARKER)
-            self.current_epoch_text.set_text(CURRENT_EPOCH_TEXT % self.current_epoch)
-        self.fig.canvas.draw()
-        plt.pause(MAIN_SUBPLOT_PAUSE_INTERVAL if is_perceptron else MAIN_SUBPLOT_ADALINE_PAUSE_INTERVAL)
 
     def __plot_perceptron_errors(self, count):
         if not self.perceptron_errors:
@@ -178,12 +153,6 @@ class Plotter:
                     self.ax_main.plot(event.xdata, event.ydata,
                                       CLASS_1_MARKER_POST_PERCEPTRON_FIT if self.perceptron.pw(current_point)
                                       else CLASS_0_MARKER_POST_PERCEPTRON_FIT)
-                else:
-                    if self.adaline_fitted:
-                        current_point = [-1] + current_point
-                        self.ax_main.plot(event.xdata, event.ydata,
-                                          CLASS_1_MARKER_POST_ADALINE_FIT if self.adaline.pw(current_point)
-                                          else CLASS_0_MARKER_POST_ADALINE_FIT)
             else:
                 self.X = np.append(self.X, current_point).reshape([len(self.X) + 1, 2])
                 #  Left click = Class 0 - Right click = Class 1
