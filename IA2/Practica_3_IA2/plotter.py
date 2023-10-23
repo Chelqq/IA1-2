@@ -24,7 +24,7 @@ class Plotter:
     done = False
 
     def __init__(self):
-        self.fig, (self.ax_main, self.ax_perceptron_errors, self.ax_adaline_errors) = plt.subplots(SUBPLOT_ROWS,
+        self.fig, (self.ax_main, self.ax_perceptron_errors) = plt.subplots(SUBPLOT_ROWS,
                                                                                                    SUBPLOT_COLS)
         self.fig.set_size_inches(FIG_WIDTH, FIG_HEIGHT, forward=True)
         plt.subplots_adjust(bottom=0.3)
@@ -89,8 +89,32 @@ class Plotter:
             plt.pause(MAIN_SUBPLOT_PAUSE_INTERVAL)
             self.perceptron_fitted = True
             self.current_epoch = 0
-            self.ax_main.set_title(MAIN_SUBPLOT_ADALINE_TITLE)
             self.algorithm_convergence_text.set_text(None)
+            self.plot_points_by_region(self.perceptron)
+
+
+    def plot_points_by_region(self, perceptron):
+        if perceptron is None:
+            return
+
+        # Obtener límites de los datos
+        x1_min, x1_max = self.X[:, 0].min() - 1, self.X[:, 0].max() + 1
+        x2_min, x2_max = self.X[:, 1].min() - 1, self.X[:, 1].max() + 1
+
+        # Crear una cuadrícula de puntos
+        xx1, xx2 = np.meshgrid(np.arange(x1_min, x1_max, 0.02), np.arange(x2_min, x2_max, 0.02))
+
+        # Predecir las clases de la cuadrícula
+        Z = np.array([perceptron.pw(np.insert(x, 0, -1)) for x in np.array([xx1.ravel(), xx2.ravel()]).T])
+        Z = Z.reshape(xx1.shape)
+
+        # Dibujar la frontera de decisión
+        self.ax_main.contourf(xx1, xx2, Z, alpha=0.4, cmap=ListedColormap(('blue', 'red')))
+
+        # Dibujar los puntos de datos
+        self.ax_main.scatter(x=self.X[self.Y == 0, 0], y=self.X[self.Y == 0, 1], alpha=0.8, c='blue', marker='x', label='Class 0')
+        self.ax_main.scatter(x=self.X[self.Y == 1, 0], y=self.X[self.Y == 1, 1], alpha=0.8, c='red', marker='.', label='Class 1')
+
 
     def plot_decision_regions(self, perceptron, resolution=0.02):
         markers = ('x', '.', '^', 'v')
