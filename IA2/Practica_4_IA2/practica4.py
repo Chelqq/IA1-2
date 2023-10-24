@@ -21,7 +21,7 @@ class Ventana:
         self.canvas = FigureCanvasTkAgg(figure= fig,master = self.grafica)
         self.canvas.get_tk_widget().pack()
 
-        self.numeroNeuronas = tk.StringVar(value=str(4))
+        self.numeroNeuronas = tk.StringVar(value=str(2))
         numeroNeuronasFrame = tk.Frame(acciones)
         numeroNeuronasLabel = tk.Label(numeroNeuronasFrame, text="Numero de neuronas:")
         numeroNeuronasLabel.pack(side='top')
@@ -119,7 +119,6 @@ class Ventana:
             w1, w2, b = net.w[i][0], net.w[i][1], net.b[i]
             plot.plot([-2,2], [(1/w2)*(-w1*(-2)-b), (1/w2)*(-w1*2-b)], linewidth=1, marker='.', color=colores[i])
         self.canvas.draw()
-
     def entrenarRedNeuronal(self):
         X = self.leerDatos('X.csv').T
         Y = self.leerDatos('Y.csv').T
@@ -127,9 +126,8 @@ class Ventana:
         
         # Calcular numero de neuronas en base a Y
         n_neuronas = int(self.numeroNeuronas.get())
-        
-        n_neuronas = Y.shape[0]
-        self.numeroNeuronas.set(str(n_neuronas))
+        #n_neuronas = Y.shape[0]
+        #self.numeroNeuronas.set(str(n_neuronas))
 
         epocas = int(self.epocas.get())
         net = RedNeuronalUnicapa(n_entradas, n_neuronas,logistic)
@@ -152,12 +150,6 @@ class Ventana:
         self.dibujarResultados(X, Y, Y_est, net, self.plot, n_neuronas)
 
 ### Funciones de activacion
-def linear(z, derivada=False):
-    a = z
-    if derivada:
-        da = np.ones(z.shape)
-        return a, da
-    return a
 
 def logistic(z, derivada=False):
     a = 1 / (1 + np.exp(-z))
@@ -166,15 +158,14 @@ def logistic(z, derivada=False):
         return a, da
     return a
 
-def tanh(z, derivada=False):
-    a = np.tanh(z)
+def relu(z, derivada=False):
     if derivada:
-        da = (1 - a) * (1 + a)
-        return a, da
-    return a
+        da = np.where(z > 0, 1, 0)
+        return z, da
+    return np.maximum(0, z)
 
 class RedNeuronalUnicapa:
-    def __init__(self, n_inputs, n_outputs, funcionActivacion=linear):
+    def __init__(self, n_inputs, n_outputs, funcionActivacion=relu):
         self.w = -1 + 2 * np.random.rand(n_outputs, n_inputs)
         self.b = -1 + 2 * np.random.rand(n_outputs, 1)
         self.f = funcionActivacion
@@ -183,7 +174,7 @@ class RedNeuronalUnicapa:
         Z = self.w @ X + self.b
         return self.f(Z)
     
-    def fit(self, X, Y, epocas=500, factorAprendizaje=0.1, callback=None):
+    def fit(self, X, Y, epocas=500, factorAprendizaje=0.01, callback=None):
         p = X.shape[1]
         self.epocaActual=0
         while (True):
@@ -202,7 +193,7 @@ class RedNeuronalUnicapa:
             if(callback):
                 callback()
             self.epocaActual = self.epocaActual + 1
-            if( self.error < 0.0001 or self.epocaActual > epocas ):
+            if( self.error < 0.02 or self.epocaActual > epocas ):
                 break
 
 class VentanaGenerarDataset:
@@ -230,7 +221,7 @@ class VentanaGenerarDataset:
         valorYFrame = tk.Frame(acciones)
         valorYLabel = tk.Label(master=valorYFrame, text="Valor Y:")
         valorYLabel.pack(side='top')
-        valorYEntry = tk.Entry(master=valorYFrame, state='disabled')
+        valorYEntry = tk.Entry(master=valorYFrame, state='normal')
         valorYEntry.pack(side='bottom')
         valorYFrame.pack(padx=10, pady=10)
 
