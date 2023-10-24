@@ -89,10 +89,13 @@ class Ventana:
             fname= archivo,
             delimiter=',')
         return datos
+    
     def generarDataset(self):
         self.ventana2 = VentanaGenerarDataset(self.window)
+    
     def cerrar(self):
         self.window.quit()
+    
     def dibujarResultados(self, X, Y, Y_est, net, plot, n_neuronas):
         plot.clear()
         plot.set_title('Red Neuronal Unicapa')
@@ -149,7 +152,7 @@ class Ventana:
             print('Resultados Predecidos Neurona #',neurona+1,': ',Y_est[neurona])
         self.dibujarResultados(X, Y, Y_est, net, self.plot, n_neuronas)
 
-### Funciones de activacion
+### Funciones de activacion --------------------------------------------------------------------------------------------------------
 
 def logistic(z, derivada=False):
     a = 1 / (1 + np.exp(-z))
@@ -173,7 +176,7 @@ class RedNeuronalUnicapa:
     def predict(self, X):
         Z = self.w @ X + self.b
         return self.f(Z)
-    
+    ##############################  fact de aprendizaje a cambiar
     def fit(self, X, Y, epocas=500, factorAprendizaje=0.01, callback=None):
         p = X.shape[1]
         self.epocaActual=0
@@ -193,6 +196,7 @@ class RedNeuronalUnicapa:
             if(callback):
                 callback()
             self.epocaActual = self.epocaActual + 1
+            #########################################   error a cambiar #############################################33
             if( self.error < 0.02 or self.epocaActual > epocas ):
                 break
 
