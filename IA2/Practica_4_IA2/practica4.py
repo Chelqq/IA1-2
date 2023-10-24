@@ -119,13 +119,15 @@ class Ventana:
             w1, w2, b = net.w[i][0], net.w[i][1], net.b[i]
             plot.plot([-2,2], [(1/w2)*(-w1*(-2)-b), (1/w2)*(-w1*2-b)], linewidth=1, marker='.', color=colores[i])
         self.canvas.draw()
+
     def entrenarRedNeuronal(self):
         X = self.leerDatos('X.csv').T
         Y = self.leerDatos('Y.csv').T
         n_entradas = X.shape[0] # 2 porque solo hay X1 y X2
         
         # Calcular numero de neuronas en base a Y
-        #n_neuronas = int(self.numeroNeuronas.get())
+        n_neuronas = int(self.numeroNeuronas.get())
+        
         n_neuronas = Y.shape[0]
         self.numeroNeuronas.set(str(n_neuronas))
 
